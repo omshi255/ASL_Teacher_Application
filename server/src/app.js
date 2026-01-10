@@ -12,6 +12,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "ASL Teacher Backend API is running",
+    version: "1.0.0",
+    endpoints: {
+      auth: "/api/auth",
+      signs: "/api/signs",
+      test: "/api/test",
+      analytics: "/api/analytics"
+    }
+  });
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/signs", signsRoutes);
 app.use("/api/test", testRoutes);
