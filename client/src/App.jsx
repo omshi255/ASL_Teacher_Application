@@ -8,6 +8,7 @@ import CameraSetup from "./pages/CameraSetup";
 import TestMode from "./pages/TestMode";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import HistoryPage from "./pages/HistoryPage";
+import Learn from "./pages/Learn";
 function App() {
   return (
     <>
@@ -40,6 +41,14 @@ function App() {
           element={
             <ProtectedRoute>
               <AnalyticsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learn"
+          element={
+            <ProtectedRoute>
+              <Learn />
             </ProtectedRoute>
           }
         />

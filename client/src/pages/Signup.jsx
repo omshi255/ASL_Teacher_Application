@@ -18,29 +18,27 @@ const Signup = () => {
     try {
       const res = await signupUser({ name, email, password });
 
-      // ✅ AUTO LOGIN (BEST PRACTICE)
-      login(res.token);
+      const [firstName, lastName = ""] = name.split(" ");
 
-      // ✅ Redirect to app, NOT login page
+      // ✅ AUTO LOGIN WITH USER DATA
+      login(res.token, {
+        firstName,
+        lastName,
+        email,
+      });
+
       navigate("/camera");
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Signup failed"
-      );
+      setError(err.response?.data?.message || "Signup failed");
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <form
-        className="p-6 border rounded w-80"
-        onSubmit={handleSubmit}
-      >
+      <form className="p-6 border rounded w-80" onSubmit={handleSubmit}>
         <h2 className="text-xl mb-4">Create Account</h2>
 
-        {error && (
-          <p className="text-red-500 text-sm mb-2">{error}</p>
-        )}
+        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
         <input
           placeholder="Name"

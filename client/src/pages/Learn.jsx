@@ -1,34 +1,31 @@
-import { useEffect, useState } from "react";
-import CameraFeed from "../components/Camera/CameraFeed.jsx";
-import { fetchSigns } from "../services/signs.service";
+import { useState } from "react";
+import CameraFeed from "../components/Camera/CameraFeed";
+import { LEARN_SIGNS } from "../utils/learnSigns";
 
 const Learn = () => {
-  const [signs, setSigns] = useState([]);
-
-  useEffect(() => {
-    fetchSigns().then(setSigns);
-  }, []);
+  const [index, setIndex] = useState(0);
+  const sign = LEARN_SIGNS[index];
 
   return (
-    <div className="p-6 grid md:grid-cols-2 gap-6">
-      <CameraFeed />
+    <div className="min-h-screen p-6 text-center">
+      <h1 className="text-2xl font-bold mb-2">Learning Mode</h1>
 
-      <div>
-        <h2 className="text-xl font-semibold mb-2">
-          Learn ASL Signs
-        </h2>
+      <h2 className="text-lg mb-2">
+        Practice: <b>{sign.name}</b>
+      </h2>
 
-        {signs.length > 0 && (
-          <>
-            <h3 className="font-medium">
-              {signs[0].name}
-            </h3>
-            <p className="text-sm text-gray-600">
-              {signs[0].description}
-            </p>
-          </>
-        )}
-      </div>
+      <img src={sign.image} alt={sign.name} className="mx-auto w-40 mb-3" />
+
+      <p className="mb-4 text-gray-600">{sign.instruction}</p>
+
+      <CameraFeed currentSign={sign.name} />
+
+      <button
+        className="mt-4 bg-indigo-600 text-white px-4 py-2"
+        onClick={() => setIndex((i) => (i + 1) % LEARN_SIGNS.length)}
+      >
+        Next Sign
+      </button>
     </div>
   );
 };

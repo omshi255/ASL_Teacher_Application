@@ -3,6 +3,7 @@ import { Camera } from "@mediapipe/camera_utils";
 import HandOverlay from "./HandOverlay";
 import { createHands } from "../../utils/hands";
 import useGestureValidation from "../hooks/useGestureValidation";
+import { speak } from "../../utils/speak";
 
 const CameraFeed = ({ currentSign, testMode, onDecision }) => {
   const videoRef = useRef(null);
@@ -12,27 +13,29 @@ const CameraFeed = ({ currentSign, testMode, onDecision }) => {
   const [results, setResults] = useState(null);
 
   const { result, processLandmarks } = useGestureValidation(currentSign);
-  const isReady = useRef(false);
 
   useEffect(() => {
     if (!videoRef.current) return;
 
-    handsRef.current = createHands(setResults);
+    let isActive = true; // 🔐 SAFETY FLAG
+
+    handsRef.current = createHands((res) => {
+      if (!isActive) return;
+      setResults(res);
+    });
 
     cameraRef.current = new Camera(videoRef.current, {
       onFrame: async () => {
-        // 🔥 HARD GUARD
-        if (
-          !videoRef.current ||
-          videoRef.current.videoWidth === 0 ||
-          !isReady.current
-        ) {
-          return;
-        }
+        if (!isActive || !handsRef.current) return;
 
-        await handsRef.current.send({
-          image: videoRef.current,
-        });
+        try {
+          await handsRef.current.send({
+            image: videoRef.current,
+          });
+          // eslint-disable-next-line no-unused-vars
+        } catch (e) {
+          // silently ignore after unmount
+        }
       },
       width: 640,
       height: 480,
@@ -40,16 +43,25 @@ const CameraFeed = ({ currentSign, testMode, onDecision }) => {
 
     cameraRef.current.start();
 
-    videoRef.current.onloadeddata = () => {
-      isReady.current = true; // 🔥 VERY IMPORTANT
-    };
-
     return () => {
-      isReady.current = false;
+      isActive = false;
+
       cameraRef.current?.stop();
+      cameraRef.current = null;
+
       handsRef.current?.close?.();
+      handsRef.current = null;
     };
   }, []);
+  useEffect(() => {
+    if (result === "Correct") {
+      speak("Correct sign");
+    }
+
+    if (result === "Incorrect") {
+      speak("Try again");
+    }
+  }, [result]);
 
   // Camera init (once)
   useEffect(() => {
