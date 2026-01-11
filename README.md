@@ -11,7 +11,7 @@ provided Product Requirements Document (PRD).
 
 ## 🚀 Live Demo
 
-🔗 Live Application:https://asl-teacher-app-i036.onrender.com/           
+🔗 Live Application:https://asl-teacher-application.vercel.app/           
 
 🔗 Backend API:https://asl-teacher-application.onrender.com
 
@@ -91,6 +91,12 @@ identity, progress, and personalization.
 - PostgreSQL
 - JWT Authentication
 - Docker
+
+### DevOps / Deployment
+
+- Docker (backend)
+- Vercel (frontend)
+- Render (backend hosting)
 
 ## 📁 Folder Structure
 
@@ -186,6 +192,12 @@ ASL_Teacher_Application/
 
 ## ⚙️ Local Setup Instructions
 
+### Prerequisites
+
+- Node.js 20+
+- Docker (optional, for containerized backend)
+
+
 ### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/omshi255/ASL_Teacher_Application.git
@@ -211,6 +223,16 @@ npm run dev
 
 
 ---
+
+### 🐳 Docker Setup (Backend)
+#### Build and Run Backend with Docker
+
+docker build -t asl-backend ./server
+docker run -p 5000:5000 --env-file server/.env asl-backend
+
+OR using Docker Compose
+docker compose up --build
+
 
 ### 2️⃣ 🔐 Environment Variables (`.env.sample` explanation)
 
@@ -335,3 +357,9 @@ Used for:
 - [x] Environment setup documentation
 - [x] Public deployment
 
+
+
+👤 Author
+Swati Sen
+
+This project was built as part of a frontend/backend engineering assignment and demonstrates real‑world development, deployment, and debugging practices.
