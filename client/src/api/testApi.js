@@ -1,39 +1,53 @@
-export const submitTestResult = async ({ score, total }) => {
-  const token = localStorage.getItem("token");
+// client/src/api/testApi.js
 
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/test/submit`, {
+const API_URL = import.meta.env.VITE_API_URL;
+
+// ✅ TEST SUBMIT (already working)
+export const submitTestResult = async ({
+  correctAnswers,
+  totalQuestions,
+  signResults,
+}) => {
+  const res = await fetch(`${API_URL}/api/test/submit`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
     body: JSON.stringify({
-      totalQuestions: total, // ✅ backend expects this
-      correctAnswers: score, // ✅ backend expects this
+      correctAnswers,
+      totalQuestions,
+      signResults, // 🔥 THIS WAS MISSING
     }),
   });
 
   const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Test submit failed");
-  }
-
+  if (!res.ok) throw new Error(data.message);
   return data;
 };
-const API_URL = import.meta.env.VITE_API_URL;
 
+// ✅ HISTORY FETCH (THIS WAS MISSING ❌)
 export const fetchTestHistory = async () => {
-  const token = localStorage.getItem("token");
-
   const res = await fetch(`${API_URL}/api/analytics/history`, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
   });
 
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "History failed");
+  if (!res.ok) throw new Error(data.message);
+  return data.history; // 👈 important
+};
 
-  return data.history; // backend sends `history`
+// ✅ ANALYTICS FETCH (optional but recommended)
+export const fetchAnalytics = async () => {
+  const res = await fetch(`${API_URL}/api/analytics/overview`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message);
+  return data;
 };

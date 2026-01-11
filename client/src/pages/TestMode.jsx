@@ -1,102 +1,209 @@
-import { useState } from "react";
-import CameraFeed from "../components/Camera/CameraFeed";
-import { TEST_SIGNS } from "../utils/testSigns";
+import { useEffect, useState } from "react";
+import CameraFeed from "../components/cameraSection/CameraFeed";
+import { fetchSigns } from "../services/signs.service";
 import { submitTestResult } from "../api/testApi";
+import FlipResultCard from "./FlipResultCard";
+import ResultSkeleton from "./ResultSkeleton";
 
 const TestMode = () => {
+  const [signs, setSigns] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState([]); // true / false
+  const [answers, setAnswers] = useState([]);
   const [completed, setCompleted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [cameraOn, setCameraOn] = useState(true);
 
-  const total = TEST_SIGNS.length;
-  const currentSign = TEST_SIGNS[currentIndex];
+  /* ================= LOAD SIGNS FROM BACKEND ================= */
+  useEffect(() => {
+    fetchSigns()
+      .then((data) => {
+        setSigns(data); // ONLY array
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Failed to load test signs");
+        setLoading(false);
+      });
+  }, []);
 
-  const handleDecision = async (isCorrect) => {
-    const updated = [...answers, isCorrect];
-    setAnswers(updated);
+  const total = signs.length;
+  const currentSign = signs[currentIndex]?.name;
 
-    // move to next sign
+  /* ================= HANDLE AUTO DECISION (FIXED) ================= */
+  const handleDecision = (isCorrect) => {
+    // ❌ already answered this sign → ignore
+    if (answers[currentIndex] !== undefined) return;
+
+    const updatedAnswers = [...answers];
+    updatedAnswers[currentIndex] = isCorrect;
+
+    setAnswers(updatedAnswers);
+
+    // move only if NOT last sign
     if (currentIndex + 1 < total) {
       setCurrentIndex((i) => i + 1);
-      return;
     }
+  };
 
-    // submit result
+  const resetTest = () => {
+    setCompleted(false);
+    setCurrentIndex(0);
+    setAnswers([]);
+    setError(null);
+  };
+
+  /* ================= SUBMIT TEST ================= */
+  const handleSubmitTest = async () => {
     try {
-      setLoading(true);
-      const score = updated.filter(Boolean).length;
+      setSubmitting(true);
+
+      const signResults = signs.map((sign, index) => ({
+        sign: sign.name,
+        isCorrect: answers[index] === true,
+      }));
+
+      const correctCount = signResults.filter((r) => r.isCorrect).length;
 
       await submitTestResult({
-        score,
-        total,
+        correctAnswers: correctCount,
+        totalQuestions: total,
+        signResults,
       });
 
       setCompleted(true);
     } catch (err) {
-      setError(err.message || "Failed to submit result");
+      setError(err.message || "Failed to submit test");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  // 🔚 RESULT SCREEN
-  if (completed) {
-    const score = answers.filter(Boolean).length;
-    const percentage = Math.round((score / total) * 100);
-
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold">Test Completed</h1>
-
-        <p className="mt-4 text-lg">
-          Score: <b>{score}</b> / {total}
-        </p>
-
-        <p className="text-lg">
-          Percentage: <b>{percentage}%</b>
-        </p>
-
-        <p className="mt-2 text-green-600">Result saved successfully</p>
-      </div>
-    );
-  }
-
-  // ⏳ LOADING
+  /* ================= LOADING ================= */
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Submitting result...
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-slate-50">
+        <ResultSkeleton />
       </div>
     );
   }
 
-  // ❌ ERROR
+  /* ================= ERROR ================= */
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-600">
+      <div className="min-h-screen flex items-center justify-center text-red-600 font-medium">
         {error}
       </div>
     );
   }
 
-  // 🎥 TEST SCREEN
+  /* ================= RESULT ================= */
+  if (completed) {
+    const score = Math.round((answers.filter(Boolean).length / total) * 100);
+    return <FlipResultCard score={score} total={100} onClose={resetTest} />;
+  }
+
+  /* ================= TEST SCREEN ================= */
   return (
-    <div className="min-h-screen flex flex-col items-center">
-      <h2 className="mt-4 text-xl font-semibold">
-        Sign {currentIndex + 1} of {total}
-      </h2>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-slate-50">
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        <div className="rounded-3xl border-gray-300 p-8">
+          {/* HEADER */}
+          <div className="text-center mb-10">
+            <p className="text-xs uppercase tracking-wide text-gray-500">
+              Test Mode
+            </p>
 
-      <p className="mt-2 text-lg">
-        Perform: <b>{currentSign}</b>
-      </p>
+            <h2 className="text-3xl font-bold text-indigo-600 mt-1">
+              Sign {currentIndex + 1} of {total}
+            </h2>
 
-      <CameraFeed
-        currentSign={currentSign}
-        testMode
-        onDecision={handleDecision}
-      />
+            <p className="mt-3 text-lg text-gray-700">
+              Perform the sign for{" "}
+              <span className="font-semibold text-indigo-600">
+                {currentSign}
+              </span>
+            </p>
+          </div>
+
+          {/* MAIN GRID */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            {/* CAMERA SECTION */}
+            <div className="lg:col-span-2">
+              <div className="relative rounded-2xl bg-gray-100 border border-gray-300 shadow-sm p-3">
+                <button
+                  onClick={() => setCameraOn((p) => !p)}
+                  className={`absolute top-4 right-4 z-20 px-4 py-2 rounded-full text-sm font-medium shadow
+                    ${
+                      cameraOn
+                        ? "bg-red-100 text-red-600"
+                        : "bg-green-100 text-green-700"
+                    }`}
+                >
+                  {cameraOn ? "Turn Off Camera" : "Turn On Camera"}
+                </button>
+
+                <div className="rounded-xl overflow-hidden bg-gray-200 flex items-center justify-center min-h-[420px]">
+                  {cameraOn ? (
+                    <CameraFeed
+                      currentSign={currentSign}
+                      testMode
+                      onDecision={handleDecision}
+                    />
+                  ) : (
+                    <div className="text-gray-500 text-sm">
+                      Camera is currently turned off
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* INSTRUCTIONS */}
+            <div className="bg-gray-50 rounded-2xl p-6 h-full shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Test Instructions
+              </h3>
+
+              <ul className="space-y-3 text-sm text-gray-600">
+                <li>• Allow camera access before starting.</li>
+                <li>• Perform each sign clearly.</li>
+                <li>• Each sign is evaluated automatically.</li>
+                <li>• One attempt per sign.</li>
+              </ul>
+
+              <div className="mt-6 text-sm text-gray-500">
+                Progress:{" "}
+                <span className="font-semibold text-indigo-600">
+                  {answers.filter((a) => a !== undefined).length}
+                </span>{" "}
+                / {total} signs attempted
+              </div>
+            </div>
+          </div>
+
+          {/* SUBMIT */}
+          <div className="mt-10 flex justify-center">
+            <button
+              onClick={handleSubmitTest}
+              disabled={
+                answers.filter((a) => a !== undefined).length < total ||
+                submitting
+              }
+              className="px-10 py-3 rounded-xl text-white font-semibold
+                bg-indigo-600 hover:bg-indigo-700
+                disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Submit Test
+            </button>
+          </div>
+
+          <p className="mt-6 text-sm text-center text-gray-500">
+            Make sure you complete all signs before submitting the test.
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

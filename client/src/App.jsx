@@ -1,5 +1,4 @@
 import { Routes, Route } from "react-router-dom";
-import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Navbar from "./components/layout/Navbar";
@@ -9,18 +8,33 @@ import TestMode from "./pages/TestMode";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import HistoryPage from "./pages/HistoryPage";
 import Learn from "./pages/Learn";
+import HomePage from "./pages/HomePage/HomePage";
+import Footer from "./components/layout/Footer";
+import { Toaster } from "react-hot-toast";
+import ProfilePage from "./pages/ProfilePage";
+
 function App() {
   return (
     <>
       <Navbar />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            fontSize: "14px",
+          },
+        }}
+      />
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/test" element={<TestMode />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
         <Route
-          path="/camera"
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <CameraSetup />
@@ -53,6 +67,7 @@ function App() {
           }
         />
       </Routes>
+      <Footer />
     </>
   );
 }

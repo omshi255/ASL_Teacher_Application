@@ -1,50 +1,47 @@
-import { gestureRules } from "../utils/gestureRules";
+import { gestureRules } from "./gestureRules";
+import { getFingerState } from "./fingerState";
 
-const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+export const validateGesture = (lm, signName) => {
+  if (!lm || !signName) return null;
 
-const fingerOpen = (tip, pip, wrist) => dist(tip, wrist) > dist(pip, wrist);
-
-const fingerClosed = (tip, pip, wrist) => dist(tip, wrist) < dist(pip, wrist);
-
-export const validateGesture = (lm, sign) => {
-  if (!lm) return null;
-
-  const rule = gestureRules[sign];
+  const rule = gestureRules[signName];
   if (!rule) return null;
 
-  const wrist = lm[0];
-
-  const indexTip = lm[8],
-    indexPip = lm[6];
-  const middleTip = lm[12],
-    middlePip = lm[10];
-  const ringTip = lm[16],
-    ringPip = lm[14];
-  const pinkyTip = lm[20],
-    pinkyPip = lm[18];
-  const thumbTip = lm[4];
-
-  const indexOpen = fingerOpen(indexTip, indexPip, wrist);
-  const middleOpen = fingerOpen(middleTip, middlePip, wrist);
-
-  const indexClosed = fingerClosed(indexTip, indexPip, wrist);
-  const middleClosed = fingerClosed(middleTip, middlePip, wrist);
-  const ringClosed = fingerClosed(ringTip, ringPip, wrist);
-  const pinkyClosed = fingerClosed(pinkyTip, pinkyPip, wrist);
+  const fingers = getFingerState(lm);
+  if (!fingers) return null;
 
   switch (rule.type) {
     case "open_palm":
-      // Hello / Stop (approximate)
-      return indexOpen && middleOpen;
+      return fingers.index && fingers.middle && fingers.ring && fingers.pinky;
 
     case "fist":
-      return indexClosed && middleClosed;
+      return (
+        !fingers.index && !fingers.middle && !fingers.ring && !fingers.pinky
+      );
 
     case "index_middle_open":
-      return indexOpen && middleOpen && ringClosed && pinkyClosed;
+      return fingers.index && fingers.middle && !fingers.ring && !fingers.pinky;
+
+    case "index_only":
+      return (
+        fingers.index && !fingers.middle && !fingers.ring && !fingers.pinky
+      );
 
     case "thumb_up":
-      return thumbTip.y < wrist.y;
+      return (
+        fingers.thumb &&
+        lm[4].y < lm[0].y && // ✅ thumb ABOVE wrist
+        !fingers.index &&
+        !fingers.middle
+      );
+
+    case "thumb_down":
+      return (
+        fingers.thumb &&
+        lm[4].y > lm[0].y && // ✅ thumb BELOW wrist
+        !fingers.index &&
+        !fingers.middle
+      );
 
     default:
       return false;

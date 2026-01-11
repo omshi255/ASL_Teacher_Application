@@ -1,75 +1,141 @@
-import { useState } from "react";
-import { signupUser } from "../services/auth.service";
-import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { signupUser } from "../services/auth.service";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import toast, { Toaster } from "react-hot-toast";
 
 const Signup = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  const initialValues = {
+    name: "",
+    email: "",
+    password: "",
+  };
 
+  const validationSchema = Yup.object({
+    name: Yup.string().min(2, "Name too short").required("Name is required"),
+
+    email: Yup.string().email("Invalid email").required("Email is required"),
+
+    password: Yup.string()
+      .min(6, "Password must be at least 6 characters")
+      .required("Password is required"),
+  });
+
+  const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const res = await signupUser({ name, email, password });
+      const res = await signupUser(values);
 
-      const [firstName, lastName = ""] = name.split(" ");
+      login(res.token, res.user);
 
-      // ✅ AUTO LOGIN WITH USER DATA
-      login(res.token, {
-        firstName,
-        lastName,
-        email,
-      });
+      toast.success("Account created successfully");
 
-      navigate("/camera");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 800);
     } catch (err) {
-      setError(err.response?.data?.message || "Signup failed");
+      toast.error(err.response?.data?.message || "Signup failed");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <form className="p-6 border rounded w-80" onSubmit={handleSubmit}>
-        <h2 className="text-xl mb-4">Create Account</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-slate-50">
+      <Toaster position="top-right" />
 
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+      <div className="w-full max-w-md rounded-3xl bg-white border border-gray-200 shadow-xl p-8">
+        <h2 className="text-2xl font-semibold text-center text-indigo-600">
+          Create Account
+        </h2>
 
-        <input
-          placeholder="Name"
-          className="w-full mb-3 p-2 border"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
+        <p className="text-sm text-gray-500 text-center mt-1">
+          Start learning sign language
+        </p>
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full mb-3 p-2 border"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ isSubmitting }) => (
+            <Form className="mt-6 space-y-4">
+              {/* NAME */}
+              <div>
+                <Field
+                  name="name"
+                  placeholder="Full Name"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <ErrorMessage
+                  name="name"
+                  component="p"
+                  className="text-red-500 text-xs mt-1"
+                />
+              </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full mb-3 p-2 border"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+              {/* EMAIL */}
+              <div>
+                <Field
+                  type="email"
+                  name="email"
+                  placeholder="Email address"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <ErrorMessage
+                  name="email"
+                  component="p"
+                  className="text-red-500 text-xs mt-1"
+                />
+              </div>
 
-        <button className="w-full bg-indigo-600 text-white py-2">
-          Sign Up
-        </button>
-      </form>
+              {/* PASSWORD */}
+              <div>
+                <Field
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <ErrorMessage
+                  name="password"
+                  component="p"
+                  className="text-red-500 text-xs mt-1"
+                />
+              </div>
+
+              {/* BUTTON */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`w-full py-2.5 rounded-xl font-semibold text-white transition
+                  ${
+                    isSubmitting
+                      ? "bg-indigo-400 cursor-not-allowed"
+                      : "bg-indigo-600 hover:bg-indigo-700"
+                  }
+                `}
+              >
+                {isSubmitting ? "Creating account..." : "Sign Up"}
+              </button>
+            </Form>
+          )}
+        </Formik>
+
+        {/* FOOTER */}
+        <p className="text-sm text-center text-gray-600 mt-6">
+          Already have an account?{" "}
+          <span
+            onClick={() => navigate("/login")}
+            className="text-indigo-600 font-medium cursor-pointer hover:underline"
+          >
+            Login
+          </span>
+        </p>
+      </div>
     </div>
   );
 };
