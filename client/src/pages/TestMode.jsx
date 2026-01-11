@@ -6,7 +6,7 @@ import FlipResultCard from "./FlipResultCard";
 import ResultSkeleton from "./ResultSkeleton";
 
 const TestMode = () => {
-  const [signs, setSigns] = useState([]);
+  const [signs, setSigns] = useState([]); // ✅ always array
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [completed, setCompleted] = useState(false);
@@ -18,8 +18,9 @@ const TestMode = () => {
   /* ================= LOAD SIGNS FROM BACKEND ================= */
   useEffect(() => {
     fetchSigns()
-      .then((data) => {
-        setSigns(data); // ONLY array
+      .then((res) => {
+        // ✅ backend returns { success, total, data }
+        setSigns(Array.isArray(res?.data) ? res.data : []);
         setLoading(false);
       })
       .catch(() => {
@@ -28,12 +29,11 @@ const TestMode = () => {
       });
   }, []);
 
-  const total = signs.length;
+  const total = Array.isArray(signs) ? signs.length : 0;
   const currentSign = signs[currentIndex]?.name;
 
-  /* ================= HANDLE AUTO DECISION (FIXED) ================= */
+  /* ================= HANDLE AUTO DECISION ================= */
   const handleDecision = (isCorrect) => {
-    // ❌ already answered this sign → ignore
     if (answers[currentIndex] !== undefined) return;
 
     const updatedAnswers = [...answers];
@@ -41,7 +41,6 @@ const TestMode = () => {
 
     setAnswers(updatedAnswers);
 
-    // move only if NOT last sign
     if (currentIndex + 1 < total) {
       setCurrentIndex((i) => i + 1);
     }
@@ -100,7 +99,11 @@ const TestMode = () => {
 
   /* ================= RESULT ================= */
   if (completed) {
-    const score = Math.round((answers.filter(Boolean).length / total) * 100);
+    const score =
+      total > 0
+        ? Math.round((answers.filter(Boolean).length / total) * 100)
+        : 0;
+
     return <FlipResultCard score={score} total={100} onClose={resetTest} />;
   }
 
