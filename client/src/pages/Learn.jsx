@@ -36,8 +36,18 @@ const Learn = () => {
   useEffect(() => {
     if (signs.length > 0) {
       const sign = signs[index];
+
       window.speechSynthesis.cancel();
-      speak(`This is the sign for ${sign.name}. ${sign.description}`);
+
+      let speechText = `This is the sign for ${sign.name}. ${sign.description}.`;
+
+      if (sign.steps?.length) {
+        sign.steps.forEach((step, i) => {
+          speechText += ` Step ${i + 1}. ${step}.`;
+        });
+      }
+
+      speak(speechText);
       setIsSpeaking(true);
     }
   }, [index, signs]);
@@ -59,7 +69,16 @@ const Learn = () => {
   const handleSpeak = () => {
     const sign = signs[index];
     window.speechSynthesis.cancel();
-    speak(`This is the sign for ${sign.name}. ${sign.description}`);
+
+    let speechText = `This is the sign for ${sign.name}. ${sign.description}.`;
+
+    if (sign.steps?.length) {
+      sign.steps.forEach((step, i) => {
+        speechText += ` Step ${i + 1}. ${step}.`;
+      });
+    }
+
+    speak(speechText);
     setIsSpeaking(true);
   };
 
@@ -101,6 +120,13 @@ const Learn = () => {
           </h2>
 
           <p className="mt-2 text-gray-700">{sign.description}</p>
+          {sign.steps?.length > 0 && (
+            <ul className="mt-3 list-decimal list-inside text-gray-700 text-sm space-y-1">
+              {sign.steps.map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ul>
+          )}
 
           {/* AUDIO CONTROLS */}
           <div className="mt-3 flex gap-3">
