@@ -1,11 +1,13 @@
 import { pool } from "../config/db.js";
 
 export const submitTest = async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { totalQuestions, correctAnswers, signResults } = req.body;
-    const userId = req.user.id; // UUID (from JWT middleware)
+    const userId = req.user.id;
 
-    // ✅ VALIDATION
+    // validation
     if (
       typeof totalQuestions !== "number" ||
       typeof correctAnswers !== "number" ||
@@ -19,13 +21,14 @@ export const submitTest = async (req, res) => {
 
     const scorePercentage = Math.round((correctAnswers / totalQuestions) * 100);
 
-    // 1️⃣ INSERT TEST ATTEMPT
-    const attemptRes = await pool.query(
+    await client.query("BEGIN");
+
+    // 1️⃣ Insert test_attempt
+    const attemptRes = await client.query(
       `
       INSERT INTO test_attempts
         (user_id, total_questions, correct_answers, score_percentage)
-      VALUES
-        ($1, $2, $3, $4)
+      VALUES ($1, $2, $3, $4)
       RETURNING id, created_at
       `,
       [userId, totalQuestions, correctAnswers, scorePercentage]
@@ -33,20 +36,41 @@ export const submitTest = async (req, res) => {
 
     const attemptId = attemptRes.rows[0].id;
 
-    // 2️⃣ INSERT PER-SIGN RESULTS
+    // 2️⃣ Insert per-sign results
     for (const s of signResults) {
-      await pool.query(
+      if (!s.sign || typeof s.isCorrect !== "boolean") continue;
+
+      // ✅ FIX 1: case-insensitive + trimmed match
+      const signRes = await client.query(
         `
-        INSERT INTO test_sign_results
-          (attempt_id, sign_name, is_correct)
-        VALUES
-          ($1, $2, $3)
+        SELECT id
+        FROM asl_signs
+        WHERE LOWER(TRIM(name)) = LOWER(TRIM($1))
         `,
-        [attemptId, s.sign, s.isCorrect]
+        [s.sign]
+      );
+
+      if (signRes.rows.length === 0) {
+        console.log("SIGN NOT FOUND IN DB:", s.sign);
+        continue;
+      }
+
+      const signId = signRes.rows[0].id;
+
+      // ✅ FIX 2: UPSERT (no duplicates)
+      await client.query(
+        `
+        INSERT INTO test_sign_results (attempt_id, sign_id, is_correct)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (attempt_id, sign_id)
+        DO UPDATE SET is_correct = EXCLUDED.is_correct
+        `,
+        [attemptId, signId, s.isCorrect]
       );
     }
 
-    // ✅ SUCCESS RESPONSE
+    await client.query("COMMIT");
+
     return res.status(201).json({
       success: true,
       message: "Test submitted successfully",
@@ -57,10 +81,14 @@ export const submitTest = async (req, res) => {
       },
     });
   } catch (error) {
+    await client.query("ROLLBACK");
     console.error("[TEST] submit error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Failed to submit test",
     });
+  } finally {
+    client.release();
   }
 };
