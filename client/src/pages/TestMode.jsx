@@ -18,9 +18,9 @@ const TestMode = () => {
   /* ================= LOAD SIGNS FROM BACKEND ================= */
   useEffect(() => {
     fetchSigns()
-      .then((res) => {
-        // ✅ backend returns { success, total, data }
-        setSigns(Array.isArray(res?.data) ? res.data : []);
+      .then((data) => {
+        // ✅ data already array hai
+        setSigns(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(() => {
