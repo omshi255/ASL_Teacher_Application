@@ -91,32 +91,26 @@ identity, progress, and personalization.
 - JWT Authentication
 - Docker
 
+## 📁 Folder Structure
 
-##Folder Structure 
-
+```text
 ASL_Teacher_Application/
 ├── client/
-│   ├── .dockerignore
 │   ├── .env
 │   ├── .gitignore
 │   ├── Dockerfile
-│   ├── eslint.config.js
 │   ├── index.html
-│   ├── package-lock.json
 │   ├── package.json
+│   ├── package-lock.json
 │   ├── public/
 │   │   └── logo.svg
-│   ├── README.md
 │   ├── src/
 │   │   ├── api/
 │   │   │   ├── authApi.js
 │   │   │   └── testApi.js
-│   │   ├── App.css
-│   │   ├── App.jsx
 │   │   ├── assets/
 │   │   │   ├── asl_demo.png
 │   │   │   ├── asl_demo.webp
-│   │   │   ├── react.svg
 │   │   │   └── unnamed.jpg
 │   │   ├── components/
 │   │   │   ├── cameraSection/
@@ -129,83 +123,64 @@ ASL_Teacher_Application/
 │   │   │   │   ├── useHandGesture.js
 │   │   │   │   └── useTestHistory.js
 │   │   │   ├── layout/
-│   │   │   │   ├── Footer.jsx
 │   │   │   │   ├── Navbar.jsx
+│   │   │   │   ├── Footer.jsx
 │   │   │   │   └── ProtectedRoute.jsx
-│   │   │   ├── logos/
-│   │   │   │   └── AslLogo.jsx
-│   │   │   └── profile/
-│   │   │       ├── ChangePasswordModal.jsx
-│   │   │       ├── DeleteProfileModal.jsx
-│   │   │       └── ProfileAvatar.jsx
-│   │   ├── context/
-│   │   │   └── AuthContext.jsx
-│   │   ├── history/
-│   │   │   └── HistoryTable.jsx
-│   │   ├── index.css
-│   │   ├── main.jsx
-│   │   ├── pages/
-│   │   │   ├── AnalyticsPage.jsx
-│   │   │   ├── CameraSetup.jsx
-│   │   │   ├── FlipResultCard.jsx
-│   │   │   ├── HistoryPage.jsx
-│   │   │   ├── HomePage/
-│   │   │   │   ├── BenefitsSection.jsx
-│   │   │   │   ├── constants.js
-│   │   │   │   ├── HeroSection.jsx
-│   │   │   │   ├── HomePage.jsx
-│   │   │   │   ├── HowItWorksSection.jsx
-│   │   │   │   ├── index.js
-│   │   │   │   └── TestFlowSection.jsx
-│   │   │   ├── Learn.jsx
-│   │   │   ├── Login.jsx
-│   │   │   ├── ProfilePage.jsx
-│   │   │   ├── ResultSkeleton.jsx
-│   │   │   ├── Signup.jsx
-│   │   │   └── TestMode.jsx
-│   │   ├── services/
-│   │   │   ├── api.js
-│   │   │   ├── auth.service.js
-│   │   │   └── signs.service.js
-│   │   └── utils/
-│   │       ├── fingerState.js
-│   │       ├── fingerUtils.js
-│   │       ├── formatDate.js
-│   │       ├── gestureRules.js
-│   │       ├── hands.js
-│   │       ├── resultMeta.js
-│   │       ├── speak.js
-│   │       ├── testSigns.js
-│   │       ├── tts.js
-│   │       └── validateGesture.js
+│   │   │   ├── profile/
+│   │   │   │   ├── ChangePasswordModal.jsx
+│   │   │   │   ├── DeleteProfileModal.jsx
+│   │   │   │   └── ProfileAvatar.jsx
+│   │   │   ├── context/
+│   │   │   │   └── AuthContext.jsx
+│   │   │   ├── pages/
+│   │   │   │   ├── HomePage/
+│   │   │   │   ├── Learn.jsx
+│   │   │   │   ├── TestMode.jsx
+│   │   │   │   ├── AnalyticsPage.jsx
+│   │   │   │   ├── HistoryPage.jsx
+│   │   │   │   └── ProfilePage.jsx
+│   │   │   ├── services/
+│   │   │   │   ├── api.js
+│   │   │   │   ├── auth.service.js
+│   │   │   │   └── signs.service.js
+│   │   │   ├── utils/
+│   │   │   │   ├── validateGesture.js
+│   │   │   │   ├── speak.js
+│   │   │   │   └── tts.js
+│   │   │   ├── App.jsx
+│   │   │   ├── main.jsx
+│   │   │   └── index.css
 │   └── vite.config.js
-├── client.zip
-└── server/
-    ├── .dockerignore
-    ├── .gitignore
-    ├── Dockerfile
-    ├── package-lock.json
-    ├── package.json
-    └── src/
-        ├── app.js
-        ├── config/
-        │   └── db.js
-        ├── controllers/
-        │   ├── analytics.controller.js
-        │   ├── auth.controller.js
-        │   ├── signs.controller.js
-        │   └── test.controller.js
-        ├── middlewares/
-        │   └── auth.middleware.js
-        ├── routes/
-        │   ├── analytics.routes.js
-        │   ├── auth.routes.js
-        │   ├── signs.routes.js
-        │   └── test.routes.js
-        ├── server.js
-        └── utils/
-            ├── hash.js
-            └── jwt.js
+│
+├── server/
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── package-lock.json
+│   └── src/
+│       ├── app.js
+│       ├── server.js
+│       ├── config/
+│       │   └── db.js
+│       ├── controllers/
+│       │   ├── auth.controller.js
+│       │   ├── signs.controller.js
+│       │   ├── test.controller.js
+│       │   └── analytics.controller.js
+│       ├── middlewares/
+│       │   └── auth.middleware.js
+│       ├── routes/
+│       │   ├── auth.routes.js
+│       │   ├── signs.routes.js
+│       │   ├── test.routes.js
+│       │   └── analytics.routes.js
+│       └── utils/
+│           ├── hash.js
+│           └── jwt.js
+│
+├── .env.example
+├── README.md
+└── server/schema.sql
+```
 
 
 ## ⚙️ Local Setup Instructions
