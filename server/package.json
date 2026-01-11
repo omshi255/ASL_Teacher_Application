@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "docker:start": "docker start asl-backend",
     "docker:stop": "docker stop asl-backend",
