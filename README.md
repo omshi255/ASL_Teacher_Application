@@ -11,7 +11,8 @@ provided Product Requirements Document (PRD).
 
 ## 🚀 Live Demo
 
-🔗 Live Application:https://asl-teacher-app-i036.onrender.com/ 
+🔗 Live Application:https://asl-teacher-app-i036.onrender.com/           
+
 🔗 Backend API:https://asl-teacher-application.onrender.com
 
 ---
