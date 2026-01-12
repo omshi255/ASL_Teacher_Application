@@ -244,6 +244,12 @@ Sensitive values are not committed to the repository.
 Refer to `.env.sample` for required variables.
 
 ```
+
+### Demo Account 
+#### username : omi123@gmail.com
+#### password : 111111
+
+
 ## 🗃️ Database Schema
 
 ### Tables
