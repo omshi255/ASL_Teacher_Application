@@ -40,7 +40,6 @@ provided Product Requirements Document (PRD).
 - Performance insights
 
 ### ✅ User History
-- Test history stored in PostgreSQL
 - Per-user analytics
 - Persistent learning progress
 
