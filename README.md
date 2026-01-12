@@ -232,6 +232,9 @@ docker run -p 5000:5000 --env-file server/.env asl-backend
 OR using Docker Compose
 docker compose up --build
 
+### Demo Video For The Docker Setup
+
+https://drive.google.com/file/d/1CLoaPB05KTaNOiLSoLi4hTt915npDp5Z/view?usp=drive_link
 
 ### 2️⃣ 🔐 Environment Variables (`.env.sample` explanation)
 
@@ -326,7 +329,7 @@ Used for:
 
 ## Demo Video  
 
-
+https://drive.google.com/file/d/12lx04sTD2GFHqAa4rzcunG-ykMqUW8xc/view?usp=drive_link
 
 
 ## 🔗 API Endpoints (Overview)
